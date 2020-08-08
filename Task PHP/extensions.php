@@ -35,16 +35,3 @@ function IsCardInsideEuZone($cardNumber)
             return false;
     }
 }
-
-function validateCardLocation($bin_number)
-{
-    $binResults = file_get_contents('https://lookup.binlist.net/' . $bin_number);
-    if (!$binResults)
-    {
-        var_dump('validating card number failed');
-        return "";
-    }
-    $r = json_decode($binResults);
-    $isEu = IsCardInsideEuZone($r->country->alpha2);
-    return $isEu;
-}
