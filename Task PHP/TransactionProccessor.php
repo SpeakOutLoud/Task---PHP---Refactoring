@@ -1,6 +1,6 @@
 <?php
 include 'extensions.php';
-include 'external_requests.php';
+include 'ExternalRequests.php';
 
 // Report all errors except E_NOTICE
 error_reporting(E_ALL & ~E_NOTICE);
@@ -8,14 +8,12 @@ error_reporting(E_ALL & ~E_NOTICE);
 $app = new TransactionProccessor($argv[1]);
 $app->process_transactions();
 
-
 class TransactionProccessor
 {
-    public $_filename = "";
+    private $_filename = "";
 
     public function __construct($filename)
     {
-        $this->$_filename = "";
         $this->$_filename = $filename;
     }
 
@@ -43,9 +41,9 @@ class TransactionProccessor
         }
         $transaction = json_decode($transaction_string);
 
-        $is_card_in_eu = validateCardLocation($transaction->bin);
+        $is_card_in_eu = ExternalRequests::validateCardLocation($transaction->bin);
     
-        $currency_rate = get_currency_rate($transaction->currency);
+        $currency_rate = ExternalRequests::get_currency_rate($transaction->currency);
         if ($transaction->currency == 'EUR' or $currency_rate == 0) {
             $amntFixed = $transaction->amount;
         }
@@ -56,8 +54,6 @@ class TransactionProccessor
         echo floor(($amntFixed * ($is_card_in_eu ? 0.01 : 0.02)) * 100) / 100;
         print "\n";
     }
-
-
 
     function read_transaction_file()
     {

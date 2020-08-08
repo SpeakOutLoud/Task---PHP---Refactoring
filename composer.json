@@ -4,7 +4,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Task PHP\\": ""
+            "Task PHP\\": "Task PHP\\"
         }
     }
 }

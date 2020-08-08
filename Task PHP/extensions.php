@@ -2,7 +2,7 @@
 
 function IsCardInsideEuZone($cardNumber)
 {
-    switch($c) {
+    switch($cardNumber) {
         case 'AT':
         case 'BE':
         case 'BG':
