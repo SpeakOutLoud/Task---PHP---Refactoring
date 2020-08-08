@@ -1,16 +1,20 @@
 <?php
 include 'extensions.php';
 
+// Report all errors except E_NOTICE
+error_reporting(E_ALL & ~E_NOTICE);
+
 $app = new App($argv[1]);
 $app->process_transactions();
 
 
 class App
 {
-    private $_filename = "";
+    public $_filename = "";
 
     public function __construct($filename)
     {
+        $this->$_filename = "";
         $this->$_filename = $filename;
     }
 
@@ -36,17 +40,11 @@ class App
             var_dump('tranasction not valid');
             return;
         }
+        var_dump($transaction_string);
 
         $transaction = json_decode($transaction_string);
 
-        $binResults = file_get_contents('https://lookup.binlist.net/' . $transaction->bin);
-        if (!$binResults)
-        {
-            var_dump('validating card number failed');
-            return;
-        }
-        $r = json_decode($binResults);
-        $isEu = IsCardInsideEuZone($r->country->alpha2);
+        $is_card_in_eu = validateCardLocation($transaction->bin);
     
         $rate = @json_decode(file_get_contents('https://api.exchangeratesapi.io/latest'), true)['rates'][$transaction->currency];
         if ($transaction->currency == 'EUR' or $rate == 0) {
@@ -56,9 +54,11 @@ class App
             $amntFixed = $transaction->amount / $rate;
         }
     
-        echo $amntFixed * ($isEu == 'yes' ? 0.01 : 0.02);
+        echo $amntFixed * ($is_card_in_eu ? 0.01 : 0.02);
         print "\n";
     }
+
+
 
     function read_transaction_file()
     {

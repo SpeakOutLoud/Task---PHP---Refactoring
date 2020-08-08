@@ -2,7 +2,6 @@
 
 function IsCardInsideEuZone($cardNumber)
 {
-    $result = false;
     switch($c) {
         case 'AT':
         case 'BE':
@@ -31,10 +30,21 @@ function IsCardInsideEuZone($cardNumber)
         case 'SE':
         case 'SI':
         case 'SK':
-            $result = 'yes';
-            return $result;
+            return true;
         default:
-            $result = 'no';
+            return false;
     }
-    return $result;
+}
+
+function validateCardLocation($bin_number)
+{
+    $binResults = file_get_contents('https://lookup.binlist.net/' . $bin_number);
+    if (!$binResults)
+    {
+        var_dump('validating card number failed');
+        return "";
+    }
+    $r = json_decode($binResults);
+    $isEu = IsCardInsideEuZone($r->country->alpha2);
+    return $isEu;
 }
