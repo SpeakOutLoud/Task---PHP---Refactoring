@@ -2,14 +2,16 @@
 
 use PHPUnit\Framework\TestCase;
 include "Task PHP\TransactionProccessor.php";
-include 'ExternalRequests.php';
+include 'Task PHP\ExternalRequests.php';
+include 'Task PHP\FileUtilityManager.php';
+include 'Task PHP\Config.php';
 
 class TransactionProccessor_Test extends TestCase
 {
     public function test_checkIfFileIsValidJson(): void
     {
-        $app = new TransactionProccessor('input.txt');
-        $transactionJson = $app->read_transaction_file();
+        $fileUtilityManager = new FileUtilityManager('input.txt');
+        $transactionJson = $fileUtilityManager->read_transaction_file();
 
         foreach (explode("\n", $transactionJson) as $transaction) {
             json_decode($transaction);
@@ -21,7 +23,7 @@ class TransactionProccessor_Test extends TestCase
     public function test_checkIfBinlistIsWorking(): void
     {
         //check if the bin number will return true, as in europe zone
-        $result = ExternalRequests::validateCardLocation('4745030');
+        $result = ExternalRequests::validate_card_location('4745030');
         $possibleResults = [true, false];
         $this->assertContains($result, $possibleResults);
     }

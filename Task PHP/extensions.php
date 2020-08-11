@@ -1,6 +1,6 @@
 <?php
 
-function IsCardInsideEuZone($cardNumber)
+function is_card_in_europe_zone($cardNumber)
 {
     switch($cardNumber) {
         case 'AT':

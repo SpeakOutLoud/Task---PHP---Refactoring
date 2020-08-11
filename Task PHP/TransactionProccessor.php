@@ -1,25 +1,19 @@
 <?php
-include 'extensions.php';
-include 'ExternalRequests.php';
 
-// Report all errors except E_NOTICE
-error_reporting(E_ALL & ~E_NOTICE);
-
-$app = new TransactionProccessor($argv[1]);
-$app->process_transactions();
+include 'Extensions.php';
 
 class TransactionProccessor
 {
-    private $_filename = "";
+    private $_fileUtilityManager;
 
-    public function __construct($filename)
+    public function __construct($fileUtilityManager)
     {
-        $this->$_filename = $filename;
+        $this->$_fileUtilityManager = $fileUtilityManager;
     }
 
     function process_transactions()
     {
-        $transaction_content = $this->read_transaction_file();
+        $transaction_content = $this->$_fileUtilityManager->read_transaction_file();
         if($transaction_content)
         {
             foreach (explode("\n", $transaction_content) as $transaction) {
@@ -41,28 +35,28 @@ class TransactionProccessor
         }
         $transaction = json_decode($transaction_string);
 
-        $is_card_in_eu = ExternalRequests::validateCardLocation($transaction->bin);
-    
+        $is_card_in_europe_zone = ExternalRequests::validate_card_location($transaction->bin);
         $currency_rate = ExternalRequests::get_currency_rate($transaction->currency);
-        if ($transaction->currency == 'EUR' or $currency_rate == 0) {
-            $amntFixed = $transaction->amount;
-        }
-        if ($transaction->currency != 'EUR' or $currency_rate > 0) {
-            $amntFixed = $transaction->amount / $currency_rate;
-        }
-    
-        echo floor(($amntFixed * ($is_card_in_eu ? 0.01 : 0.02)) * 100) / 100;
+
+        $amount_fixed = $this->calculate_rate($transaction->currency, $currency_rate, $transaction->amount);
+        $this->log_currency_rate($amount_fixed, $is_card_in_europe_zone, $transaction->amount);
+
         print "\n";
     }
 
-    function read_transaction_file()
+    function log_currency_rate($amount_fixed, $is_card_in_europe_zone)
     {
-        if($this->$_filename != null && file_exists($this->$_filename))
-        {
-            return file_get_contents($this->$_filename);
+        echo floor(($amount_fixed * ($is_card_in_eu ? 0.01 : 0.02)) * 100) / 100;
+    }
+
+    function calculate_rate($currency, $currency_rate, $amount)
+    {
+        if ($currency == 'EUR' || $currency_rate == 0) {
+            $amount_fixed = $amount;
         }
-        return "";
+        if ($currency != 'EUR' || $currency_rate > 0) {
+            $amount_fixed = $amount / $currency_rate;
+        }
+        return $amount_fixed;
     }
 }
-
-
